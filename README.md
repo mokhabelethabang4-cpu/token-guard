@@ -1,43 +1,35 @@
+TokenGuard 🛡️
 
-# TokenGuard 🛡️
+Lightweight local request protection for Python AI applications.
 
-**Lightweight local request protection for Python AI applications.**
+TokenGuard helps Python developers limit oversized prompts and detect repeated requests before sending them to an AI provider.
 
-TokenGuard helps developers limit oversized prompts and detect repeated requests within a configurable time window.
+It is a small, dependency-free utility designed to help applications reduce accidental repeated requests and catch prompts that exceed a configured estimated token limit.
 
-## Features
+Features
 
-- **Prompt size limits** — Reject prompts that exceed the configured token estimate.
-- **Repeated request detection** — Block identical prompts after a configurable number of previous requests.
-- **Time-window tracking** — Expire old request records automatically.
-- **Thread safety** — Protect shared request history with a lock.
-- **Input validation** — Reject invalid prompt types and configuration values.
-- **No external dependencies** — Uses Python's standard library.
+- Prompt size limits: Reject prompts that exceed a configurable estimated token limit.
+- Repeated request detection: Block identical prompts after a configurable number of previous accepted requests.
+- Time-window tracking: Automatically expire old request records.
+- Thread safety: Protect shared request history with a lock.
+- Input validation: Reject invalid prompt types and configuration values.
+- No third-party dependencies: Uses Python's standard library.
 
-## Requirements
+Requirements
 
-- Python 3.9 or newer recommended.
-- No third-party packages required.
+- Python 3.9 or newer.
+- No third-party runtime dependencies.
 
-## Installation
+Installation
 
-Clone the repository:
+Install TokenGuard from PyPI:
 
-```bash
-git clone https://github.com/mokhabelet habang4-cpu/token-guard.git
-```
+python -m pip install tokenguard-local
 
-Enter the project directory:
+PyPI project page: https://pypi.org/project/tokenguard-local/
 
-```bash
-cd token-guard
-```
+Quick start
 
-> If your GitHub username or repository URL differs, replace the URL with your repository's actual clone URL.
-
-## Usage
-
-```python
 from token_guard import TokenGuard
 
 guard = TokenGuard(
@@ -46,54 +38,84 @@ guard = TokenGuard(
     window_seconds=60,
 )
 
-prompt = "Explain how AI works."
+prompt = "Explain how artificial intelligence works."
 
 if guard.check(prompt):
+    # Send the prompt to your AI provider here.
     print("Request allowed")
 else:
     print("Request blocked")
-```
 
-## Configuration
+Important: Call "guard.check(prompt)" before sending the prompt to your AI provider. TokenGuard does not automatically intercept network requests.
 
-| Parameter | Default | Description |
-|---|---:|---|
-| `max_tokens` | `8000` | Maximum estimated prompt tokens |
-| `max_repeats` | `3` | Maximum number of previously accepted identical prompts |
-| `window_seconds` | `60` | Time window used for request tracking |
+Configuration
 
-The repeat limit counts previous matching requests. A prompt is blocked when the number of earlier matching requests in the active window reaches `max_repeats`.
+Parameter| Default| Description
+"max_tokens"| "8000"| Maximum estimated prompt tokens allowed
+"max_repeats"| "3"| Maximum previous accepted identical prompts within the time window
+"window_seconds"| "60"| Time window used to track repeated prompts
 
-## Token estimation
+Example with stricter limits:
 
-TokenGuard estimates token usage using prompt length:
+from token_guard import TokenGuard
 
-```python
+guard = TokenGuard(
+    max_tokens=2000,
+    max_repeats=2,
+    window_seconds=30,
+)
+
+prompt = "Summarize this document."
+
+if not guard.check(prompt):
+    print("Prompt blocked by TokenGuard")
+
+The repeat limit counts earlier accepted matching requests. With "max_repeats=3", the first three matching requests can be accepted, while the fourth is blocked if it occurs within the active time window.
+
+Token estimation
+
+TokenGuard uses a quick character-based estimate:
+
 estimated_tokens = max(1, (len(text) + 3) // 4)
-```
 
-This is a rough estimate, not an exact model tokenizer. Actual token counts vary by AI model and text content.
+This is only an approximation. Actual token counts depend on the model, tokenizer, and content. TokenGuard does not use a model-specific tokenizer or verify actual provider token usage.
 
-## Run tests
+Run tests
 
-Run the test suite with Python:
+To obtain the source code:
 
-```bash
+git clone https://github.com/mokhabelethabang4-cpu/token-guard.git
+cd token-guard
+
+Run the test suite from the repository directory:
+
 python -m unittest -v
-```
 
-## Limitations
+Limitations
 
+TokenGuard is a local request-checking utility, not a complete API security or billing enforcement system.
+
+- Your application must explicitly call "guard.check(prompt)" before sending a request.
+- It does not automatically intercept all AI API calls or network traffic.
+- Token estimates are approximate, not exact provider token counts.
 - Request history is stored in memory and resets when the process restarts.
-- Limits apply to a single `TokenGuard` instance, not automatically across multiple processes or servers.
-- TokenGuard does not contact AI providers or validate their actual token usage.
-- Applications must call `guard.check(prompt)` before sending a request to their AI provider.
-- This package does not replace authentication, authorization, or provider-side rate limits.
+- Limits apply to each "TokenGuard" instance; they are not shared automatically across multiple processes or servers.
+- It does not enforce provider-side spending limits, authentication, authorization, or rate limits.
+- It does not guarantee that every runaway loop or excessive API cost will be prevented.
 
-## Project status
+Use provider-side usage limits and monitoring alongside TokenGuard when controlling AI API costs.
+
+Project status
 
 TokenGuard is an early-stage project focused on lightweight, local request protection for Python AI applications.
 
-## License
+Contributions, bug reports, and suggestions are welcome through the GitHub repository.
 
-See the repository's license file for usage and distribution terms.
+License
+
+This project is licensed under the MIT License. See the "LICENSE" file in the repository for details.
+
+Links
+
+- PyPI: https://pypi.org/project/tokenguard-local/
+- GitHub: https://github.com/mokhabelethabang4-cpu/token-guard
