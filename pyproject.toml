@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tokenguard-local"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lightweight local request protection for Python AI applications"
 readme = "README.md"
 requires-python = ">=3.9"
