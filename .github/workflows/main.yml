@@ -8,6 +8,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -17,5 +18,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run TokenGuard tests
+      - name: Install build tools
+        run: python -m pip install --upgrade pip build
+
+      - name: Run unit tests
         run: python -m unittest -v
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package files
+        run: |
+          python -m pip install --upgrade twine
+          python -m twine check dist/*
