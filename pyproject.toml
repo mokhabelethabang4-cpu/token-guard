@@ -1,3 +1,4 @@
+
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -9,6 +10,7 @@ description = "Lightweight local request protection for Python AI applications"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "TokenGuard Contributors" }
 ]
@@ -17,9 +19,10 @@ keywords = [
     "llm",
     "token-budget",
     "loop-detection",
-    "safety"
+    "python"
 ]
 classifiers = [
+    "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent"
 ]
