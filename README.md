@@ -1,59 +1,55 @@
-# token-guard
-A lightweight local request guard for Python AI applications
 
-"""TokenGuard: lightweight local AI request protection."""
+# TokenGuard 🛡️
 
-from collections import deque
-from threading import Lock
-import time
+Lightweight, local request protection for Python AI applications.
 
+TokenGuard helps developers limit oversized prompts and detect repeated request patterns before sending requests to an AI provider.
 
-class TokenGuard:
-    """Block oversized requests and repeated request loops."""
+## Features
 
-    def __init__(
-        self,
-        max_tokens=8000,
-        max_repeats=3,
-        window_seconds=60,
-    ):
-        self.max_tokens = max_tokens
-        self.max_repeats = max_repeats
-        self.window_seconds = window_seconds
-        self.history = deque()
-        self.lock = Lock()
+- Configurable prompt-size limit
+- Repeated-prompt detection
+- Local, in-memory request history
+- No telemetry or cloud service required
+- Automated tests with GitHub Actions
 
-    @staticmethod
-    def estimate_tokens(text):
-        """Fast rough estimate; not an exact tokenizer."""
-        return max(1, (len(text) + 3) // 4)
+## Requirements
 
-    def check(self, prompt):
-        """Return True if allowed, otherwise False."""
-        now = time.monotonic()
-        fingerprint = hash(prompt)
-        estimated = self.estimate_tokens(prompt)
+- Python 3.9 or newer
 
-        with self.lock:
-            while (
-                self.history
-                and now - self.history[0][0] > self.window_seconds
-            ):
-                self.history.popleft()
+## Installation
 
-            if estimated > self.max_tokens:
-                return False
+TokenGuard is not published on PyPI yet.
 
-            repeats = sum(
-                1 for _, previous in self.history
-                if previous == fingerprint
-            )
+To use it locally, place `token_guard.py` in your project and import it:
 
-            if repeats >= self.max_repeats:
-                return False
+```python
+from token_guard import TokenGuard
 
-            self.history.append((now, fingerprint))
-            return True
+guard = TokenGuard(max_tokens=8000, max_repeats=3)
 
+prompt = "Explain how Python works."
 
-guard = TokenGuard()
+if guard.check(prompt):
+    print("Request allowed")
+else:
+    print("Request blocked")
+```
+
+## Important limitations
+
+TokenGuard uses an approximate character-based token estimate, not an exact model tokenizer.
+
+It checks only prompts explicitly passed to `guard.check()`. It does not automatically intercept all network requests, enforce an API spending limit, or provide operating-system kernel protection.
+
+## Development
+
+Run the tests with:
+
+```bash
+python -m unittest -v
+```
+
+## License
+
+MIT
